@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
-from app.core import security
-from app.models.database import User, UserRole
+from core import security
+from models.database import User, UserRole
 # Note: In a real app, you'd use a DB session dependency
 # from app.core.db import get_db
 

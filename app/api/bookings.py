@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
-from app.services.lock_service import LockService
+from services.lock_service import LockService
 from datetime import datetime
 
 router = APIRouter()

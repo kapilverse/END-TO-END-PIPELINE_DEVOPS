@@ -1,13 +1,33 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.venv/
+env/
+.env
+*.so
+
+# Node / React
 node_modules/
 dist/
-.env
-.DS_Store
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
+dist-ssr/
+*.local
 .eslintcache
-.jest/
-coverage/
-.next/
-out/
-build/
+
+# Mobile / Expo
+.expo/
+*.jks
+*.p8
+*.entitlements
+*.plist
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db

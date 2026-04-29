@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, Query
 from typing import List
-from app.services.matching import MatchingService
+from services.matching import MatchingService
 from sqlalchemy.orm import Session
 # from app.db import get_db
 

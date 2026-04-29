@@ -1,7 +1,13 @@
 from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import HTMLResponse
 from prometheus_client import make_asgi_app, Counter
 import time
+import os
+
+# Import routes
+from api import auth, bookings, tracking, providers
 
 app = FastAPI(
     title="UrbanService Marketplace API",
@@ -22,17 +28,32 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-@app.get("/")
+# Static Files for Web UI
+if not os.path.exists("static"):
+    os.makedirs("static")
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
+@app.get("/admin", response_class=HTMLResponse)
+async def admin_panel():
+    try:
+        with open("static/admin.html", "r") as f:
+            return f.read()
+    except FileNotFoundError:
+        return "<h1>Admin Panel File Not Found</h1><p>Please check static/admin.html</p>"
+
+@app.get("/", response_class=HTMLResponse)
 async def root():
-    return {"message": "Welcome to UrbanService Pro API", "status": "online"}
+    try:
+        with open("static/index.html", "r", encoding="utf-8") as f:
+            return f.read()
+    except FileNotFoundError:
+        return "<h1>UrbanService Pro Web UI Not Found</h1><p>Please check static/index.html</p>"
 
 @app.get("/health")
 async def health_check():
     return {"status": "healthy", "timestamp": time.time()}
 
-# Import routes
-from app.api import auth, bookings, tracking, providers
-
+# Include routers
 app.include_router(auth.router, prefix="/auth", tags=["Auth"])
 app.include_router(bookings.router, prefix="/bookings", tags=["Bookings"])
 app.include_router(providers.router, prefix="/providers", tags=["Providers"])
