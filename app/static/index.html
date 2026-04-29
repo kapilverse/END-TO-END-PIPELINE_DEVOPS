@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UrbanService Pro | Premium Home Services</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #10b981;
+            --bg: #0b0f1a;
+            --card: rgba(30, 41, 59, 0.7);
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+            --glass: rgba(255, 255, 255, 0.03);
+            --border: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg); }
+        ::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 10px; }
+
+        /* Navbar */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            padding: 1.5rem 10%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            background: rgba(11, 15, 26, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text);
+            text-decoration: none;
+        }
+
+        .logo span { color: var(--primary); }
+
+        .nav-links {
+            display: flex;
+            gap: 2.5rem;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text-muted);
+            font-weight: 500;
+            transition: 0.3s;
+        }
+
+        .nav-links a:hover { color: var(--primary); }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            padding: 0.8rem 1.8rem;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: 0.3s;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3);
+        }
+
+        /* Hero Section */
+        .hero {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 10%;
+            background: radial-gradient(circle at 80% 20%, rgba(99, 102, 241, 0.15) 0%, transparent 40%);
+            position: relative;
+        }
+
+        .hero-content {
+            max-width: 600px;
+            z-index: 2;
+        }
+
+        .hero-tag {
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--primary);
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            display: inline-block;
+            margin-bottom: 1.5rem;
+            border: 1px solid rgba(99, 102, 241, 0.2);
+        }
+
+        .hero h1 {
+            font-size: 4.5rem;
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            background: linear-gradient(to right, #fff, #94a3b8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            color: var(--text-muted);
+            margin-bottom: 2.5rem;
+        }
+
+        .hero-img {
+            position: absolute;
+            right: 5%;
+            width: 45%;
+            height: 70%;
+            border-radius: 40px;
+            background-image: url('static/hero.png');
+            background-size: cover;
+            background-position: center;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--border);
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        /* Stats Bar */
+        .stats-bar {
+            background: var(--glass);
+            backdrop-filter: blur(5px);
+            padding: 2rem 10%;
+            display: flex;
+            justify-content: space-around;
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .stat-item { text-align: center; }
+        .stat-item h3 { font-size: 2rem; color: var(--text); }
+        .stat-item p { color: var(--text-muted); font-size: 0.9rem; }
+
+        /* Discovery Section */
+        .discover {
+            padding: 8rem 10%;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 5rem;
+        }
+
+        .section-header h2 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .section-header p {
+            color: var(--text-muted);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .provider-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .provider-card {
+            background: var(--card);
+            border-radius: 24px;
+            padding: 2rem;
+            border: 1px solid var(--border);
+            transition: 0.4s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .provider-card:hover {
+            transform: translateY(-10px);
+            border-color: var(--primary);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+
+        .ai-badge {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(45deg, var(--primary), #a855f7);
+            padding: 0.4rem 0.8rem;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .provider-icon {
+            width: 60px;
+            height: 60px;
+            background: rgba(99, 102, 241, 0.1);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: var(--primary);
+            margin-bottom: 1.5rem;
+        }
+
+        .provider-info h4 { font-size: 1.4rem; margin-bottom: 0.5rem; }
+        .provider-rating { color: #fbbf24; font-weight: 600; margin-bottom: 1rem; }
+        .provider-price { font-size: 1.2rem; font-weight: 700; color: var(--text); }
+        .provider-price span { color: var(--text-muted); font-size: 0.9rem; font-weight: 400; }
+
+        .btn-outline {
+            width: 100%;
+            margin-top: 1.5rem;
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 0.8rem;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .btn-outline:hover {
+            background: var(--border);
+            border-color: var(--text-muted);
+        }
+
+        /* Footer */
+        footer {
+            padding: 5rem 10% 2rem;
+            background: #020617;
+            border-top: 1px solid var(--border);
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: 4rem;
+            margin-bottom: 4rem;
+        }
+
+        .footer-about p { color: var(--text-muted); margin-top: 1.5rem; }
+        .footer-links h4 { margin-bottom: 1.5rem; }
+        .footer-links ul { list-style: none; }
+        .footer-links li { margin-bottom: 0.8rem; }
+        .footer-links a { color: var(--text-muted); text-decoration: none; transition: 0.3s; }
+        .footer-links a:hover { color: var(--primary); }
+
+        .copyright {
+            text-align: center;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border);
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        /* Animations */
+        [data-aos] {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: 1s;
+        }
+
+        [data-aos].active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        @media (max-width: 1024px) {
+            .hero { flex-direction: column; text-align: center; padding-top: 8rem; }
+            .hero-img { position: relative; right: 0; width: 100%; height: 400px; margin-top: 3rem; }
+            .hero h1 { font-size: 3rem; }
+            .footer-grid { grid-template-columns: 1fr 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <a href="#" class="logo">
+            <div style="width: 32px; height: 32px; background: var(--primary); border-radius: 8px; display: flex; align-items: center; justify-content: center;"><i class="fas fa-bolt" style="color: white; font-size: 0.8rem;"></i></div>
+            UrbanService<span>Pro</span>
+        </a>
+        <div class="nav-links">
+            <a href="#services">Services</a>
+            <a href="#discover">Discover</a>
+            <a href="/admin">Admin</a>
+            <a href="#contact">Support</a>
+        </div>
+        <button class="btn-primary" onclick="alert('Connecting to Authentication Service...')">Get Started</button>
+    </nav>
+
+    <section class="hero">
+        <div class="hero-content">
+            <span class="hero-tag">✨ Next-Gen Service Marketplace</span>
+            <h1>Premium Home Services, Reimagined.</h1>
+            <p>Experience the future of home maintenance with AI-driven provider matching, real-time tracking, and verified professionals.</p>
+            <div style="display: flex; gap: 1rem;">
+                <a href="#discover" class="btn-primary">Book a Service</a>
+                <a href="#" class="btn-outline" style="width: auto; margin-top: 0; padding: 0.8rem 1.8rem;">Watch Demo</a>
+            </div>
+        </div>
+        <div class="hero-img"></div>
+    </section>
+
+    <section class="stats-bar">
+        <div class="stat-item">
+            <h3>50k+</h3>
+            <p>Verified Professionals</p>
+        </div>
+        <div class="stat-item">
+            <h3>4.9/5</h3>
+            <p>Average Rating</p>
+        </div>
+        <div class="stat-item">
+            <h3>120+</h3>
+            <p>Service Categories</p>
+        </div>
+        <div class="stat-item">
+            <h3>15min</h3>
+            <p>Avg. Response Time</p>
+        </div>
+    </section>
+
+    <section id="discover" class="discover">
+        <div class="section-header" data-aos>
+            <h2>Discover Top Rated Pros</h2>
+            <p>Our matching algorithm connects you with the best providers in your area based on distance, rating, and expertise.</p>
+        </div>
+
+        <div class="provider-grid" id="provider-container">
+            <!-- Loading State -->
+            <div style="text-align: center; grid-column: 1/-1; padding: 3rem;">
+                <i class="fas fa-spinner fa-spin" style="font-size: 2rem; color: var(--primary);"></i>
+                <p style="margin-top: 1rem;">Scanning for available professionals...</p>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="footer-grid">
+            <div class="footer-about">
+                <a href="#" class="logo">
+                    <div style="width: 32px; height: 32px; background: var(--primary); border-radius: 8px; display: flex; align-items: center; justify-content: center;"><i class="fas fa-bolt" style="color: white; font-size: 0.8rem;"></i></div>
+                    UrbanService<span>Pro</span>
+                </a>
+                <p>Building the world's most trusted ecosystem for local services. Quality, reliability, and security at your fingertips.</p>
+            </div>
+            <div class="footer-links">
+                <h4>Company</h4>
+                <ul>
+                    <li><a href="#">About Us</a></li>
+                    <li><a href="#">Careers</a></li>
+                    <li><a href="#">Press</a></li>
+                    <li><a href="#">Blog</a></li>
+                </ul>
+            </div>
+            <div class="footer-links">
+                <h4>Services</h4>
+                <ul>
+                    <li><a href="#">Cleaning</a></li>
+                    <li><a href="#">Repair</a></li>
+                    <li><a href="#">Beauty</a></li>
+                    <li><a href="#">Events</a></li>
+                </ul>
+            </div>
+            <div class="footer-links">
+                <h4>Legal</h4>
+                <ul>
+                    <li><a href="#">Privacy Policy</a></li>
+                    <li><a href="#">Terms of Service</a></li>
+                    <li><a href="#">Cookie Policy</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="copyright">
+            &copy; 2026 UrbanService Pro Marketplace. All rights reserved. Built with ❤️ for the future of work.
+        </div>
+    </footer>
+
+    <script>
+        // Simple AOS (Animate On Scroll) implementation
+        const observerOptions = {
+            threshold: 0.1
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('active');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('[data-aos]').forEach(el => observer.observe(el));
+
+        // Fetch Providers from API
+        async function fetchProviders() {
+            try {
+                // Using mock coordinates for discovery
+                const response = await fetch('/providers/discover?lat=28.6139&lng=77.2090&service_id=1');
+                const data = await response.json();
+                renderProviders(data.results);
+            } catch (error) {
+                console.error("Error fetching providers:", error);
+                document.getElementById('provider-container').innerHTML = `<p style="text-align: center; grid-column: 1/-1; color: #ef4444;">Failed to load providers. Please ensure the backend is running.</p>`;
+            }
+        }
+
+        function renderProviders(providers) {
+            const container = document.getElementById('provider-container');
+            container.innerHTML = '';
+
+            providers.forEach(p => {
+                const card = document.createElement('div');
+                card.className = 'provider-card';
+                card.setAttribute('data-aos', '');
+                
+                const icons = ['wrench', 'bolt', 'broom', 'hammer', 'plug'];
+                const randomIcon = icons[Math.floor(Math.random() * icons.length)];
+
+                card.innerHTML = `
+                    ${p.is_ai_recommended ? '<div class="ai-badge"><i class="fas fa-robot"></i> AI Recommended</div>' : ''}
+                    <div class="provider-icon">
+                        <i class="fas fa-${randomIcon}"></i>
+                    </div>
+                    <div class="provider-info">
+                        <h4>${p.name}</h4>
+                        <div class="provider-rating">
+                            ${'★'.repeat(Math.floor(p.rating))}${p.rating % 1 !== 0 ? '½' : ''} 
+                            <span style="color: var(--text-muted); font-size: 0.8rem;">(${p.rating})</span>
+                        </div>
+                        <div class="provider-price">₹${p.price} <span>/ hr</span></div>
+                        <button class="btn-outline" onclick="alert('Booking feature coming soon to web! Use mobile app for live tracking.')">Book Now</button>
+                    </div>
+                `;
+                container.appendChild(card);
+                observer.observe(card);
+            });
+        }
+
+        // Initialize
+        setTimeout(fetchProviders, 1000); // Simulate network delay for effect
+    </script>
+</body>
+</html>
