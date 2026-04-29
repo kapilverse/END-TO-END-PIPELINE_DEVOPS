@@ -1,33 +1,22 @@
-# Stage 1: Build
-FROM node:20-alpine AS build
+FROM python:3.11-slim
 
 WORKDIR /app
 
-# Patch OS vulnerabilities
-RUN apk update && apk upgrade --no-cache
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
 
-COPY package*.json ./
-RUN npm install
+# Install Python dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
+# Copy application code
 COPY . .
 
-# Stage 2: Runtime
-FROM node:20-alpine
+# Expose port
+EXPOSE 8000
 
-WORKDIR /app
-
-# Patch OS vulnerabilities in runtime
-RUN apk update && apk upgrade --no-cache && \
-    npm install -g npm@latest
-
-# Only copy production dependencies and source
-COPY --from=build /app/package*.json ./
-RUN npm install --only=production
-
-COPY --from=build /app/src ./src
-
-EXPOSE 3000
-
-ENV NODE_ENV=production
-
-CMD ["node", "src/index.js"]
+# Start application using uvicorn
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
