@@ -1,60 +1,67 @@
-name: CD - Deploy to K8s
+name: CD - Production Deployment
 
 on:
   push:
     branches: [ main ]
+  workflow_dispatch: # Allows manual trigger
 
 jobs:
   deploy:
+    name: Build, Scan and Deploy
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout Code
+      uses: actions/checkout@v4
 
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
 
     - name: Login to Docker Hub
+      if: github.event_name != 'pull_request'
       uses: docker/login-action@v3
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-    - name: Build and push
+    - name: Build and push Image
+      id: docker_build
       uses: docker/build-push-action@v6
       with:
         context: ./app
-        push: true
+        push: ${{ github.event_name != 'pull_request' }}
         tags: |
-          ${{ secrets.DOCKERHUB_USERNAME }}/k8s-cicd-demo-app:latest
-          ${{ secrets.DOCKERHUB_USERNAME }}/k8s-cicd-demo-app:${{ github.sha }}
+          ${{ secrets.DOCKERHUB_USERNAME }}/urbanpulse-api:latest
+          ${{ secrets.DOCKERHUB_USERNAME }}/urbanpulse-api:${{ github.sha }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
 
     - name: Security Scan Image (Trivy)
       uses: aquasecurity/trivy-action@master
       with:
-        image-ref: '${{ secrets.DOCKERHUB_USERNAME }}/k8s-cicd-demo-app:${{ github.sha }}'
+        image-ref: '${{ secrets.DOCKERHUB_USERNAME }}/urbanpulse-api:${{ github.sha }}'
         format: 'table'
-        exit-code: '1' # Fail the build if critical vulnerabilities are found
+        exit-code: '1' 
         ignore-unfixed: true
         severity: 'CRITICAL,HIGH'
 
     - name: Install Helm
       uses: azure/setup-helm@v3
 
-    - name: Deploy to Kubernetes
+    - name: Deploy to Kubernetes Cluster
       env:
         KUBECONFIG_DATA: ${{ secrets.KUBECONFIG }}
       run: |
         if [ -z "$KUBECONFIG_DATA" ]; then
-          echo "⚠️ KUBECONFIG secret is missing. Skipping actual deployment."
-          echo "Simulated: helm upgrade --install web-app ./charts/web-app --set image.tag=${{ github.sha }}"
+          echo "::warning title=Deployment Skipped::KUBECONFIG secret is missing. Skipping actual Kubernetes deployment."
+          echo "Simulated: helm upgrade --install urbanpulse ./charts/web-app --set image.tag=${{ github.sha }}"
         else
           # Setup KUBECONFIG
           mkdir -p ~/.kube
-          echo "$KUBECONFIG_DATA" > ~/.kube/config
+          echo "$KUBECONFIG_DATA" | base64 -d > ~/.kube/config
           
           # Actual Helm Deployment
-          helm upgrade --install web-app ./charts/web-app \
-            --set image.repository=${{ secrets.DOCKERHUB_USERNAME }}/k8s-cicd-demo-app \
+          helm upgrade --install urbanpulse ./charts/web-app \
+            --set image.repository=${{ secrets.DOCKERHUB_USERNAME }}/urbanpulse-api \
             --set image.tag=${{ github.sha }} \
             --namespace production --create-namespace \
             --wait --timeout 5m
@@ -62,8 +69,8 @@ jobs:
           echo "✅ Deployment successful!"
         fi
 
-    - name: Verify Deployment Health
+    - name: Verify Service Health
       if: env.KUBECONFIG_DATA != ''
       run: |
-        kubectl rollout status deployment/web-app -n production
-        echo "Application is live and healthy!"
+        kubectl rollout status deployment/urbanpulse -n production
+        echo "🚀 Application is live and healthy!"
