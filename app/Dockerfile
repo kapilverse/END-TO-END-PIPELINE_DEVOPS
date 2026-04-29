@@ -1,7 +1,10 @@
 # Stage 1: Build
-FROM node:18-alpine AS build
+FROM node:20-alpine AS build
 
 WORKDIR /app
+
+# Patch OS vulnerabilities
+RUN apk update && apk upgrade --no-cache
 
 COPY package*.json ./
 RUN npm install
@@ -9,9 +12,13 @@ RUN npm install
 COPY . .
 
 # Stage 2: Runtime
-FROM node:18-alpine
+FROM node:20-alpine
 
 WORKDIR /app
+
+# Patch OS vulnerabilities in runtime
+RUN apk update && apk upgrade --no-cache && \
+    npm install -g npm@latest
 
 # Only copy production dependencies and source
 COPY --from=build /app/package*.json ./
