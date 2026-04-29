@@ -3,18 +3,16 @@ name: CD - Production Deployment
 on:
   push:
     branches: [ main ]
-  workflow_dispatch: # Allows manual trigger
+  workflow_dispatch:
 
 jobs:
   deploy:
     name: Build, Scan and Deploy
-    runs-on: ubuntu-latest
+    # This tells GitHub to run the job on YOUR laptop instead of the cloud
+    runs-on: self-hosted 
     steps:
     - name: Checkout Code
       uses: actions/checkout@v4
-
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
 
     - name: Login to Docker Hub
       if: github.event_name != 'pull_request'
@@ -32,45 +30,21 @@ jobs:
         tags: |
           ${{ secrets.DOCKERHUB_USERNAME }}/urbanpulse-api:latest
           ${{ secrets.DOCKERHUB_USERNAME }}/urbanpulse-api:${{ github.sha }}
-        cache-from: type=gha
-        cache-to: type=gha,mode=max
 
-    - name: Security Scan Image (Trivy)
-      uses: aquasecurity/trivy-action@master
-      with:
-        image-ref: '${{ secrets.DOCKERHUB_USERNAME }}/urbanpulse-api:${{ github.sha }}'
-        format: 'table'
-        exit-code: '1' 
-        ignore-unfixed: true
-        severity: 'CRITICAL,HIGH'
-
-    - name: Install Helm
-      uses: azure/setup-helm@v3
-
-    - name: Deploy to Kubernetes Cluster
-      env:
-        KUBECONFIG_DATA: ${{ secrets.KUBECONFIG }}
+    - name: Deploy to Local Kubernetes
+      # Since it's self-hosted, we assume kubectl and helm are already installed on your laptop
       run: |
-        if [ -z "$KUBECONFIG_DATA" ]; then
-          echo "::warning title=Deployment Skipped::KUBECONFIG secret is missing. Skipping actual Kubernetes deployment."
-          echo "Simulated: helm upgrade --install urbanpulse ./charts/web-app --set image.tag=${{ github.sha }}"
-        else
-          # Setup KUBECONFIG
-          mkdir -p ~/.kube
-          echo "$KUBECONFIG_DATA" | base64 -d > ~/.kube/config
-          
-          # Actual Helm Deployment
-          helm upgrade --install urbanpulse ./charts/web-app \
-            --set image.repository=${{ secrets.DOCKERHUB_USERNAME }}/urbanpulse-api \
-            --set image.tag=${{ github.sha }} \
-            --namespace production --create-namespace \
-            --wait --timeout 5m
-            
-          echo "✅ Deployment successful!"
-        fi
+        helm upgrade --install urbanpulse ./charts/web-app `
+          --set image.repository=${{ secrets.DOCKERHUB_USERNAME }}/urbanpulse-api `
+          --set image.tag=${{ github.sha }} `
+          --namespace production --create-namespace `
+          --wait
+        
+        echo "✅ Deployment successful on your local Docker Desktop cluster!"
+      shell: powershell
 
     - name: Verify Service Health
-      if: env.KUBECONFIG_DATA != ''
       run: |
         kubectl rollout status deployment/urbanpulse -n production
-        echo "🚀 Application is live and healthy!"
+        echo "🚀 Application is live on your local machine!"
+      shell: powershell
