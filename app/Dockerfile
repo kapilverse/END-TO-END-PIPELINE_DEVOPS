@@ -1,0 +1,26 @@
+# Stage 1: Build
+FROM node:18-alpine AS build
+
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm install
+
+COPY . .
+
+# Stage 2: Runtime
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Only copy production dependencies and source
+COPY --from=build /app/package*.json ./
+RUN npm install --only=production
+
+COPY --from=build /app/src ./src
+
+EXPOSE 3000
+
+ENV NODE_ENV=production
+
+CMD ["node", "src/index.js"]
