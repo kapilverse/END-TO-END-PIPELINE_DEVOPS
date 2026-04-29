@@ -1,0 +1,9 @@
+{
+  "name": "k8s-cicd-demo-root",
+  "version": "1.0.0",
+  "scripts": {
+    "test": "npm test --prefix app",
+    "start": "npm start --prefix app",
+    "lint": "npm run lint --prefix app"
+  }
+}
