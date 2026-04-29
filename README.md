@@ -1,68 +1,110 @@
-# 🚀 Industry-Grade End-to-End CI/CD Pipeline with Kubernetes
+# 🌐 UrbanPulse: Production-Grade Service Marketplace
 
-This repository contains a production-ready CI/CD pipeline demonstration, showcasing the full lifecycle of a modern web application.
+![Build Status](https://img.shields.io/github/actions/workflow/status/kapilverse/UrbanPulse/ci.yml?branch=main&label=CI%20Pipeline&style=for-the-badge)
+![Security Scan](https://img.shields.io/badge/Security-Trivy%20Verified-brightgreen?style=for-the-badge)
+![Framework](https://img.shields.io/badge/Framework-FastAPI-009688?style=for-the-badge&logo=fastapi)
 
-## 🌟 Key Features
+**UrbanPulse** is a high-performance, containerized marketplace engine for local services. This project demonstrates a complete "End-to-End" DevOps lifecycle—from a Python backend to a secure, automated Kubernetes deployment.
 
-- **Automated Pipeline**: GitHub Actions for CI (Build/Test) and CD (Deployment).
-- **Kubernetes Orchestration**: Managed via **Helm Charts** with built-in HPA and health checks.
-- **Advanced Deployment**: Templates for **Canary/Blue-Green** deployments.
-- **Full Observability**: Integrated **Prometheus** for metrics and **Grafana** for visualization.
-- **Optimized Containers**: Multi-stage Docker builds for minimal footprint and security.
+---
 
-## 🏗️ Architecture
+## 🚀 Key Features
+
+- **High-Performance API**: Built with **FastAPI** for asynchronous, lightning-fast service matching.
+- **Full DevOps Pipeline**: Automated CI/CD using **GitHub Actions**.
+- **Containerization**: Optimized **Docker** builds with multi-stage security.
+- **Kubernetes Ready**: Orchestrated via **Helm Charts** with built-in health checks.
+- **Self-Hosted CI/CD**: Demonstrates professional local deployment using a **GitHub Self-Hosted Runner**.
+- **Security First**: Integrated **Trivy** image scanning and **Safety** dependency checks.
+
+---
+
+## 🏗️ System Architecture
 
 ```mermaid
-graph LR
-    A[Code Push] --> B[GitHub Actions CI]
-    B --> C{Tests Pass?}
-    C -- Yes --> D[Docker Build & Push]
-    D --> E[GitHub Actions CD]
-    E --> F[Helm Upgrade]
-    F --> G[Kubernetes Cluster]
-    G --> H[Prometheus Monitoring]
-    H --> I[Grafana Dashboards]
+graph TD
+    subgraph Development
+        A[Local Code] -->|git push| B(GitHub Repository)
+    end
+    
+    subgraph CI Pipeline
+        B --> C[Linting & Testing]
+        C --> D[Security Scan]
+        D --> E[Docker Build]
+    end
+    
+    subgraph CD Pipeline
+        E -->|Push| F[Docker Hub]
+        F -->|Trigger| G[Self-Hosted Runner]
+        G -->|Helm Upgrade| H[Docker Desktop K8s]
+    end
+    
+    subgraph Monitoring
+        H --> I[Prometheus Metrics]
+        I --> J[Grafana Dashboard]
+    end
 ```
+
+---
 
 ## 📂 Project Structure
 
-- `app/`: Node.js Express application with `/health` and `/metrics`.
-- `charts/`: Helm charts for Kubernetes deployment.
-- `.github/workflows/`: CI/CD automation logic.
-- `kubernetes/monitoring/`: Prometheus and Grafana configurations.
-- `scripts/`: Automation scripts for local setup.
-
-## 🛠️ Getting Started (Local Setup)
-
-### Prerequisites
-- [Docker Desktop](https://www.docker.com/products/docker-desktop/) (Enable Kubernetes)
-- [Helm](https://helm.sh/docs/intro/install/)
-
-### Execution
-Run the setup script to initialize the entire stack locally:
-```powershell
-.\scripts\setup.ps1
-```
-
-## 🚀 CI/CD Logic
-
-### CI (Continuous Integration)
-- Triggers on every Pull Request and Push to `main`.
-- Installs dependencies, runs **Jest** tests, and validates Docker build.
-
-### CD (Continuous Deployment)
-- Triggers on merge to `main`.
-- Pushes image to Docker Hub with a unique SHA tag.
-- Performs a zero-downtime `helm upgrade` to the Kubernetes cluster.
-
-## 📊 Monitoring & Rollback
-
-- **Metrics**: The app exports custom metrics like `http_request_duration_seconds`.
-- **Dashboards**: Grafana is pre-configured to scrape the app and show real-time performance.
-- **Rollback**: If a deployment fails, Kubernetes automatically keeps the old version running (readiness probes), and you can manually rollback using:
-  ```bash
-  helm rollback web-app [REVISION] -n production
-  ```
+- `app/`: **FastAPI** application logic (Python 3.11).
+- `charts/`: **Helm** charts for Kubernetes orchestration.
+- `.github/workflows/`: Advanced CI/CD pipeline logic.
+- `mobile/`: (Coming Soon) React Native mobile interface.
+- `web/`: (Coming Soon) Modern web dashboard.
 
 ---
-*Created for DevOps Engineering Portfolios & Interview Demonstrations.*
+
+## 🛠️ Local Installation
+
+### Prerequisites
+- **Python 3.11+**
+- **Docker Desktop** (with Kubernetes enabled)
+- **Helm**
+
+### Step-by-Step Setup
+1. **Clone & Setup Virtual Env:**
+   ```powershell
+   git clone https://github.com/kapilverse/UrbanPulse.git
+   cd UrbanPulse
+   python -m venv venv
+   .\venv\Scripts\Activate.ps1
+   ```
+
+2. **Install Dependencies:**
+   ```powershell
+   cd app
+   pip install -r requirements.txt
+   ```
+
+3. **Run Locally:**
+   ```powershell
+   uvicorn main:app --reload
+   ```
+   *Access at: http://localhost:8000*
+
+---
+
+## ⛓️ CI/CD Pipeline Explanation
+
+### Continuous Integration (CI)
+- **Linting**: Uses `flake8` to maintain professional code standards.
+- **Testing**: Runs `pytest` suite for automated regression testing.
+- **Security**: Scans dependencies using `Safety`.
+
+### Continuous Deployment (CD)
+- **Environment**: Utilizes a **Self-Hosted Runner** to bridge the gap between GitHub Cloud and your local Kubernetes cluster.
+- **Deployment**: Performs a zero-downtime `helm upgrade` on the local `urbanpulse` namespace.
+
+---
+
+## 📊 Observability & Monitoring
+
+The app exports real-time metrics for **Prometheus**:
+- **Health**: `/health` endpoint for K8s Liveness/Readiness probes.
+- **Metrics**: `/metrics` endpoint for Prometheus scraping.
+
+---
+*Developed as a showcase of modern DevOps Engineering and Scalable Backend Architecture.*
