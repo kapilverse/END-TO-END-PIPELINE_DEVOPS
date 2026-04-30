@@ -122,11 +122,14 @@ const ProviderCard = ({ provider }) => (
   </motion.div>
 );
 
+import MapView from './components/MapView';
+
 function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [providers, setProviders] = useState([]);
   const [loading, setLoading] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [viewMode, setViewMode] = useState('list'); // 'list' or 'map'
 
   useEffect(() => {
     if (activeTab === 'discover' || activeTab === 'dashboard') {
@@ -142,11 +145,11 @@ function App() {
       setProviders(data.results || []);
     } catch (err) {
       console.error("Failed to fetch providers", err);
-      // Fallback for demo
+      // Fallback for demo with coordinates
       setProviders([
-        { id: 1, name: "John Plumber", rating: 4.8, price: 500, is_ai_recommended: true },
-        { id: 2, name: "Quick Fix Inc", rating: 4.2, price: 400, is_ai_recommended: false },
-        { id: 3, name: "Expert Electrics", rating: 4.9, price: 800, is_ai_recommended: true },
+        { id: 1, name: "John Plumber", rating: 4.8, price: 500, is_ai_recommended: true, location: { lat: 28.6139, lng: 77.2090 } },
+        { id: 2, name: "Quick Fix Inc", rating: 4.2, price: 400, is_ai_recommended: false, location: { lat: 28.6239, lng: 77.2190 } },
+        { id: 3, name: "Expert Electrics", rating: 4.9, price: 800, is_ai_recommended: true, location: { lat: 28.6039, lng: 77.1990 } },
       ]);
     }
     setLoading(false);
@@ -236,7 +239,23 @@ function App() {
               exit={{ opacity: 0, x: -20 }}
             >
               <div className="discover-head">
-                <h2>Discover Service Professionals</h2>
+                <div>
+                  <h2>Discover Service Professionals</h2>
+                  <div className="view-toggle">
+                    <button 
+                      className={`toggle-btn ${viewMode === 'list' ? 'active' : ''}`}
+                      onClick={() => setViewMode('list')}
+                    >
+                      List View
+                    </button>
+                    <button 
+                      className={`toggle-btn ${viewMode === 'map' ? 'active' : ''}`}
+                      onClick={() => setViewMode('map')}
+                    >
+                      Map View
+                    </button>
+                  </div>
+                </div>
                 <div className="search-wrap">
                   <Search className="search-icon" size={18} />
                   <input 
@@ -248,12 +267,33 @@ function App() {
               </div>
 
               {loading ? <p className="subtle-text">Loading professionals...</p> : null}
-              <div className="discover-grid">
-                {providers.map(p => <ProviderCard key={p.id} provider={p} />)}
-              </div>
+              
+              <AnimatePresence mode="wait">
+                {viewMode === 'list' ? (
+                  <motion.div 
+                    key="list"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="discover-grid"
+                  >
+                    {providers.map(p => <ProviderCard key={p.id} provider={p} />)}
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="map"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                  >
+                    <MapView providers={providers} />
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </motion.div>
           )}
         </AnimatePresence>
+
       </main>
     </div>
   );
