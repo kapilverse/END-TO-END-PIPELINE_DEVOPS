@@ -18,7 +18,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import './App.css';
 
-const Sidebar = ({ activeTab, setActiveTab, isOpen, setIsOpen }) => {
+const Sidebar = ({ activeTab, setActiveTab, isOpen, setIsOpen, onLogout }) => {
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'discover', label: 'Discover Pros', icon: Search },
@@ -60,7 +60,7 @@ const Sidebar = ({ activeTab, setActiveTab, isOpen, setIsOpen }) => {
       </nav>
 
       <div className="sidebar-footer">
-        <button className="menu-item sign-out">
+        <button className="menu-item sign-out" onClick={onLogout}>
           <LogOut size={20} />
           <span>Sign Out</span>
         </button>
@@ -68,6 +68,7 @@ const Sidebar = ({ activeTab, setActiveTab, isOpen, setIsOpen }) => {
     </aside>
   );
 };
+
 
 const StatCard = ({ label, value, icon: Icon, trend }) => (
   <motion.div 
@@ -123,8 +124,10 @@ const ProviderCard = ({ provider }) => (
 );
 
 import MapView from './components/MapView';
+import Auth from './components/Auth';
 
 function App() {
+  const [user, setUser] = useState(null);
   const [activeTab, setActiveTab] = useState('dashboard');
   const [providers, setProviders] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -132,10 +135,27 @@ function App() {
   const [viewMode, setViewMode] = useState('list'); // 'list' or 'map'
 
   useEffect(() => {
-    if (activeTab === 'discover' || activeTab === 'dashboard') {
+    const token = localStorage.getItem('token');
+    if (token) {
+      // In a real app, you'd verify the token with the backend
+      setUser({ phone: 'demo', name: 'Demo Admin', role: 'admin' });
+    }
+  }, []);
+
+  useEffect(() => {
+    if (user && (activeTab === 'discover' || activeTab === 'dashboard')) {
       fetchProviders();
     }
-  }, [activeTab]);
+  }, [activeTab, user]);
+
+  const handleLogin = (userData) => {
+    setUser({ phone: userData.phone || 'demo', name: userData.name || 'Demo User', role: userData.role || 'user' });
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    setUser(null);
+  };
 
   const fetchProviders = async () => {
     setLoading(true);
@@ -155,10 +175,20 @@ function App() {
     setLoading(false);
   };
 
+  if (!user) {
+    return <Auth onLogin={handleLogin} />;
+  }
+
   return (
     <div className="app-shell">
       <div className={`sidebar-overlay ${isSidebarOpen ? 'show' : ''}`} onClick={() => setIsSidebarOpen(false)} />
-      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
+      <Sidebar 
+        activeTab={activeTab} 
+        setActiveTab={setActiveTab} 
+        isOpen={isSidebarOpen} 
+        setIsOpen={setIsSidebarOpen} 
+        onLogout={handleLogout}
+      />
 
       <main className="main-content">
         <header className="topbar">
@@ -168,7 +198,7 @@ function App() {
                 <Menu size={20} />
               </button>
             </div>
-            <h1>Welcome back, Admin</h1>
+            <h1>Welcome back, {user.name.split(' ')[0]}</h1>
             <p>Here's what's happening with your service marketplace today.</p>
           </div>
           <div className="topbar-right">
@@ -177,7 +207,7 @@ function App() {
               <div className="dot"></div>
             </button>
             <div className="avatar">
-              AD
+              {user.name.split(' ').map(n => n[0]).join('')}
             </div>
           </div>
         </header>
@@ -293,6 +323,7 @@ function App() {
             </motion.div>
           )}
         </AnimatePresence>
+
 
       </main>
     </div>
