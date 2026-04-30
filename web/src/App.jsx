@@ -88,7 +88,7 @@ const StatCard = ({ label, value, icon: Icon, trend }) => (
   </motion.div>
 );
 
-const ProviderCard = ({ provider }) => (
+const ProviderCard = ({ provider, onBook }) => (
   <motion.div 
     layout
     initial={{ opacity: 0, scale: 0.9 }}
@@ -117,7 +117,7 @@ const ProviderCard = ({ provider }) => (
       <div className="subtle-text">Starting from</div>
       <div className="provider-price">₹{provider.price}</div>
     </div>
-    <button className="provider-cta">
+    <button className="provider-cta" onClick={() => onBook(provider)}>
       Book Service
     </button>
   </motion.div>
@@ -125,6 +125,7 @@ const ProviderCard = ({ provider }) => (
 
 import MapView from './components/MapView';
 import Auth from './components/Auth';
+import BookingModal from './components/BookingModal';
 
 function App() {
   const [user, setUser] = useState(null);
@@ -133,6 +134,7 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [viewMode, setViewMode] = useState('list'); // 'list' or 'map'
+  const [selectedProvider, setSelectedProvider] = useState(null);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -235,7 +237,7 @@ function App() {
                     <button className="text-button">View All</button>
                   </div>
                   <div className="providers-grid">
-                    {providers.slice(0, 4).map(p => <ProviderCard key={p.id} provider={p} />)}
+                    {providers.slice(0, 4).map(p => <ProviderCard key={p.id} provider={p} onBook={setSelectedProvider} />)}
                   </div>
                 </section>
 
@@ -307,7 +309,7 @@ function App() {
                     exit={{ opacity: 0 }}
                     className="discover-grid"
                   >
-                    {providers.map(p => <ProviderCard key={p.id} provider={p} />)}
+                    {providers.map(p => <ProviderCard key={p.id} provider={p} onBook={setSelectedProvider} />)}
                   </motion.div>
                 ) : (
                   <motion.div
@@ -322,7 +324,45 @@ function App() {
               </AnimatePresence>
             </motion.div>
           )}
+
+          {activeTab === 'bookings' && (
+            <motion.div 
+              key="bookings"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="panel"
+            >
+              <div className="panel-head">
+                <h2>Your Recent Bookings</h2>
+              </div>
+              <div className="bookings-list">
+                <div className="empty-state">
+                  <Calendar size={48} className="subtle-text" />
+                  <p>You have no active bookings yet.</p>
+                  <button className="provider-cta" style={{ width: 'auto', padding: '10px 20px' }} onClick={() => setActiveTab('discover')}>
+                    Browse Professionals
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          )}
         </AnimatePresence>
+
+
+        <AnimatePresence>
+          {selectedProvider && (
+            <BookingModal 
+              provider={selectedProvider} 
+              onClose={() => setSelectedProvider(null)}
+              onBookingSuccess={() => {
+                setSelectedProvider(null);
+                setActiveTab('bookings');
+              }}
+            />
+          )}
+        </AnimatePresence>
+
 
 
       </main>
