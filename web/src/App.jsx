@@ -559,15 +559,15 @@ export default function App() {
       <div className="settings-list">
         <div className="settings-item">
           <span className="settings-label">Full name</span>
-          <strong>{currentUser.name}</strong>
+          <strong>{currentUser?.name}</strong>
         </div>
         <div className="settings-item">
           <span className="settings-label">Phone</span>
-          <strong>{currentUser.phone}</strong>
+          <strong>{currentUser?.phone}</strong>
         </div>
         <div className="settings-item">
           <span className="settings-label">Account role</span>
-          <strong>{currentUser.role}</strong>
+          <strong>{currentUser?.role}</strong>
         </div>
       </div>
     </motion.div>
