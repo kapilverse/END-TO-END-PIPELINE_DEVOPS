@@ -633,3 +633,71 @@
   }
 }
 
+/* Dark Mode Overrides */
+[data-theme='dark'] .app-shell { background: #0b0f19; color: #f8fafc; }
+[data-theme='dark'] .sidebar { background: #111827; border-right-color: #1f2937; }
+[data-theme='dark'] .brand-text { color: #f8fafc; }
+[data-theme='dark'] .mobile-close { background: #111827; border-color: #374151; color: #94a3b8; }
+[data-theme='dark'] .menu-item { background: #111827; color: #94a3b8; }
+[data-theme='dark'] .menu-item:hover { background: #1f2937; color: #f8fafc; }
+[data-theme='dark'] .menu-item.active { background: rgba(37, 99, 235, 0.2); color: #60a5fa; border-color: rgba(37, 99, 235, 0.5); }
+[data-theme='dark'] .sidebar-footer { border-top-color: #1f2937; }
+[data-theme='dark'] .sign-out:hover { background: rgba(239, 68, 68, 0.1); color: #ef4444; border-color: rgba(239, 68, 68, 0.3); }
+
+[data-theme='dark'] .topbar h1 { color: #f8fafc; }
+[data-theme='dark'] .topbar p { color: #94a3b8; }
+[data-theme='dark'] .icon-button { background: #111827; border-color: #374151; color: #94a3b8; }
+[data-theme='dark'] .icon-button:hover { background: #1f2937; border-color: #4b5563; }
+[data-theme='dark'] .avatar { background: #1f2937; color: #f8fafc; }
+
+[data-theme='dark'] .stat-card { background: #111827; border-color: #1f2937; box-shadow: none; }
+[data-theme='dark'] .stat-icon { background: rgba(37, 99, 235, 0.2); color: #60a5fa; }
+[data-theme='dark'] .trend-chip.up { background: rgba(16, 185, 129, 0.2); color: #34d399; }
+[data-theme='dark'] .trend-chip.down { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+[data-theme='dark'] .stat-label { color: #94a3b8; }
+[data-theme='dark'] .stat-value { color: #f8fafc; }
+
+[data-theme='dark'] .panel { background: #111827; border-color: #1f2937; }
+[data-theme='dark'] .panel h3 { color: #f8fafc; }
+[data-theme='dark'] .text-button { color: #60a5fa; }
+
+[data-theme='dark'] .provider-card { background: #111827; border-color: #1f2937; }
+[data-theme='dark'] .provider-header h4 { color: #f8fafc; }
+[data-theme='dark'] .provider-avatar { background: rgba(37, 99, 235, 0.2); color: #60a5fa; }
+[data-theme='dark'] .ai-badge { background: rgba(37, 99, 235, 0.2); color: #60a5fa; }
+[data-theme='dark'] .provider-price { color: #f8fafc; }
+[data-theme='dark'] .provider-cta { background: #1f2937; border-color: #374151; color: #f8fafc; }
+[data-theme='dark'] .provider-cta:hover { background: #3b82f6; border-color: #3b82f6; }
+
+[data-theme='dark'] .feed-item { border-bottom-color: #1f2937; }
+[data-theme='dark'] .feed-icon { background: rgba(37, 99, 235, 0.2); color: #60a5fa; }
+[data-theme='dark'] .feed-text { color: #94a3b8; }
+[data-theme='dark'] .feed-text strong { color: #60a5fa; }
+[data-theme='dark'] .feed-text span { color: #f8fafc; }
+[data-theme='dark'] .feed-time { color: #64748b; }
+
+[data-theme='dark'] .discover-head h2 { color: #f8fafc; }
+[data-theme='dark'] .search-input { background: #111827; border-color: #374151; color: #f8fafc; }
+[data-theme='dark'] .search-input:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2); }
+[data-theme='dark'] .toggle-btn { background: #111827; border-color: #374151; color: #94a3b8; }
+[data-theme='dark'] .toggle-btn.active { background: #3b82f6; color: #ffffff; border-color: #3b82f6; }
+
+[data-theme='dark'] .booking-item { background: #111827; border-color: #1f2937; }
+[data-theme='dark'] .booking-info h4 { color: #f8fafc; }
+[data-theme='dark'] .booking-info p { color: #94a3b8; }
+[data-theme='dark'] .status-chip.pending { background: rgba(234, 179, 8, 0.2); color: #fde047; }
+[data-theme='dark'] .status-chip.confirmed { background: rgba(34, 197, 94, 0.2); color: #86efac; }
+[data-theme='dark'] .status-chip.completed { background: rgba(59, 130, 246, 0.2); color: #93c5fd; }
+[data-theme='dark'] .status-chip.cancelled { background: rgba(239, 68, 68, 0.2); color: #fca5a5; }
+
+/* Booking Modal */
+[data-theme='dark'] .modal-overlay { background: rgba(0,0,0,0.7); }
+[data-theme='dark'] .modal-content { background: #111827; border: 1px solid #1f2937; }
+[data-theme='dark'] .modal-content h2 { color: #f8fafc; }
+[data-theme='dark'] .modal-content p { color: #94a3b8; }
+[data-theme='dark'] .modal-form label { color: #94a3b8; }
+[data-theme='dark'] .modal-form input[type="date"], [data-theme='dark'] .modal-form input[type="time"] { background: #1f2937; color: #f8fafc; border: 1px solid #374151; }
+[data-theme='dark'] .modal-actions button.cancel-btn { background: #1f2937; color: #f8fafc; border: 1px solid #374151; }
+[data-theme='dark'] .modal-actions button.cancel-btn:hover { background: #374151; }
+
+

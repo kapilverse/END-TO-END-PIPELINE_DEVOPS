@@ -13,7 +13,9 @@ import {
   Clock,
   LogOut,
   Menu,
-  X
+  X,
+  Moon,
+  Sun
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import './App.css';
@@ -137,6 +139,12 @@ function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [viewMode, setViewMode] = useState('list'); // 'list' or 'map'
   const [selectedProvider, setSelectedProvider] = useState(null);
+  const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('theme', theme);
+  }, [theme]);
 
   async function fetchProviders() {
     setLoading(true);
@@ -295,6 +303,13 @@ function App() {
             <p>Here's what's happening with your service marketplace today.</p>
           </div>
           <div className="topbar-right">
+            <button 
+              className="icon-button"
+              onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
+              aria-label="Toggle Theme"
+            >
+              {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
+            </button>
             <button className="icon-button with-dot">
               <Bell size={20} />
               <div className="dot"></div>
