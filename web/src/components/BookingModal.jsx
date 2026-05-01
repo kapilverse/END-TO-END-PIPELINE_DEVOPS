@@ -1,11 +1,13 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Calendar, Clock, CreditCard, CheckCircle, ArrowRight, Loader2 } from 'lucide-react';
+import { supabase } from '../supabaseClient';
 import './BookingModal.css';
 
 const BookingModal = ({ provider, onClose, onBookingSuccess }) => {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const [selectedDate, setSelectedDate] = useState('');
   const [selectedSlot, setSelectedSlot] = useState('');
 
@@ -19,22 +21,38 @@ const BookingModal = ({ provider, onClose, onBookingSuccess }) => {
 
   const handleConfirm = async () => {
     setLoading(true);
-    // Simulate API call to /bookings/create
     try {
-      const res = await fetch(`http://localhost:8000/bookings/create?provider_id=${provider.id}&slot=${selectedSlot}&user_id=1`, {
-        method: 'POST'
-      });
-      
-      if (res.ok) {
-        // Simulate payment wait
-        await new Promise(r => setTimeout(r, 2000));
-        setStep(3);
-        setTimeout(() => {
-          onBookingSuccess();
-        }, 3000);
+      // Get the current user session
+      const { data: { session } } = await supabase.auth.getSession();
+      const userId = session?.user?.id;
+
+      if (!userId) {
+        throw new Error('You must be logged in to book a service.');
       }
+
+      // Build an ISO timestamp from the selected date + slot
+      const slotDateTime = new Date(`${selectedDate} ${selectedSlot}`).toISOString();
+      const totalPrice = (provider.price || 0) + 49; // base price + platform fee
+
+      const { error } = await supabase.from('bookings').insert({
+        user_id: userId,
+        provider_id: provider.id,
+        slot_time: slotDateTime,
+        status: 'pending',
+        total_price: totalPrice,
+      });
+
+      if (error) throw error;
+
+      // Short delay for the payment animation, then show success
+      await new Promise(r => setTimeout(r, 1500));
+      setStep(3);
+      setTimeout(() => {
+        onBookingSuccess();
+      }, 3000);
     } catch (err) {
-      console.error("Booking failed", err);
+      console.error('Booking failed:', err.message);
+      setError(err.message || 'Booking failed. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -131,6 +149,7 @@ const BookingModal = ({ provider, onClose, onBookingSuccess }) => {
                   <CreditCard size={48} className="payment-icon" />
                   <p>Secure payment via UrbanPay</p>
                 </div>
+                {error && <p className="auth-error" style={{marginBottom: '12px'}}>{error}</p>}
                 <button 
                   className="confirm-btn" 
                   onClick={handleConfirm}
