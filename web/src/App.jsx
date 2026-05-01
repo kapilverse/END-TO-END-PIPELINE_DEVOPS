@@ -288,6 +288,7 @@ export default function App() {
   const [discoverView, setDiscoverView] = useState('list');
   const [selectedProvider, setSelectedProvider] = useState(null);
   const [reviewBooking, setReviewBooking] = useState(null);
+  const [providersError, setProvidersError] = useState('');
 
   const deferredSearch = useDeferredValue(providerSearch);
 
@@ -374,6 +375,7 @@ export default function App() {
 
   async function fetchProviders() {
     setProvidersLoading(true);
+    setProvidersError('');
 
     try {
       const { data, error } = await supabase
@@ -393,13 +395,18 @@ export default function App() {
         )
         .eq('is_active', true);
 
+      console.log('[fetchProviders] raw data:', data, 'error:', error);
+
       if (error) {
         throw error;
       }
 
-      setProviders((data || []).map(mapProviderRow));
+      const mapped = (data || []).map(mapProviderRow);
+      console.log('[fetchProviders] mapped providers:', mapped);
+      setProviders(mapped);
     } catch (error) {
       console.error('Failed to fetch providers:', error);
+      setProvidersError(error.message || 'Failed to load providers');
       setProviders([]);
     } finally {
       setProvidersLoading(false);
@@ -757,10 +764,20 @@ export default function App() {
                     exit={{ opacity: 0 }}
                     className="discover-grid"
                   >
-                    {filteredProviders.length === 0 ? (
+                    {providersError ? (
+                      <div className="empty-state">
+                        <Wrench size={48} className="subtle-text" />
+                        <p style={{ color: '#ef4444' }}>Error loading providers: {providersError}</p>
+                      </div>
+                    ) : filteredProviders.length === 0 ? (
                       <div className="empty-state">
                         <Wrench size={48} className="subtle-text" />
                         <p>No professionals match this search yet.</p>
+                        {providers.length > 0 && selectedService !== 'all' && (
+                          <button className="text-button" onClick={() => setSelectedService('all')} style={{ marginTop: 8 }}>
+                            Clear filter to see all {providers.length} provider(s)
+                          </button>
+                        )}
                       </div>
                     ) : (
                       filteredProviders.map((provider) => (
