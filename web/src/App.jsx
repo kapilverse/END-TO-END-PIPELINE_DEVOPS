@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   LayoutDashboard, 
   Users, 
@@ -17,6 +17,10 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import './App.css';
+import MapView from './components/MapView';
+import Auth from './components/Auth';
+import BookingModal from './components/BookingModal';
+import { supabase } from './supabaseClient';
 
 const Sidebar = ({ activeTab, setActiveTab, isOpen, setIsOpen, onLogout }) => {
   const menuItems = [
@@ -33,7 +37,7 @@ const Sidebar = ({ activeTab, setActiveTab, isOpen, setIsOpen, onLogout }) => {
         <div className="brand-icon">
           <Zap size={20} />
         </div>
-        <span className="brand-text">UrbanPro</span>
+        <span className="brand-text">UrbanPulse</span>
         <button className="mobile-close" onClick={() => setIsOpen(false)} aria-label="Close navigation">
           <X size={18} />
         </button>
@@ -123,44 +127,47 @@ const ProviderCard = ({ provider, onBook }) => (
   </motion.div>
 );
 
-import MapView from './components/MapView';
-import Auth from './components/Auth';
-import BookingModal from './components/BookingModal';
-
 function App() {
   const [user, setUser] = useState(null);
   const [activeTab, setActiveTab] = useState('dashboard');
   const [providers, setProviders] = useState([]);
+  const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [bookingsLoading, setBookingsLoading] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [viewMode, setViewMode] = useState('list'); // 'list' or 'map'
   const [selectedProvider, setSelectedProvider] = useState(null);
 
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      // In a real app, you'd verify the token with the backend
-      setUser({ phone: 'demo', name: 'Demo Admin', role: 'admin' });
-    }
-  }, []);
-
-  useEffect(() => {
-    if (user && (activeTab === 'discover' || activeTab === 'dashboard')) {
-      fetchProviders();
-    }
-  }, [activeTab, user]);
-
-  const handleLogin = (userData) => {
-    setUser({ phone: userData.phone || 'demo', name: userData.name || 'Demo User', role: userData.role || 'user' });
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    setUser(null);
-  };
-
-  const fetchProviders = async () => {
+  async function fetchProviders() {
     setLoading(true);
+    
+    // Attempt Supabase Fetch
+    if (import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_URL !== 'https://your-project-id.supabase.co') {
+      const { data, error } = await supabase
+        .from('providers')
+        .select(`
+          id, rating, base_price,
+          profiles (full_name, avatar_url, location),
+          services (name)
+        `)
+        .eq('is_active', true);
+
+      if (!error && data) {
+        const formatted = data.map(p => ({
+          id: p.id,
+          name: p.profiles?.full_name || 'Expert Pro',
+          rating: p.rating,
+          price: p.base_price,
+          location: p.profiles?.location,
+          is_ai_recommended: p.rating > 4.5
+        }));
+        setProviders(formatted);
+        setLoading(false);
+        return;
+      }
+    }
+
+    // Fallback for demo
     try {
       const res = await fetch('http://localhost:8000/providers/discover?lat=28.6139&lng=77.2090&service_id=1');
       const data = await res.json();
@@ -175,7 +182,90 @@ function App() {
       ]);
     }
     setLoading(false);
-  };
+  }
+
+  // ── Auth helpers ────────────────────────────────────────────────────────────
+  function buildUserObj(supabaseUser) {
+    return {
+      id: supabaseUser.id,
+      name: supabaseUser.user_metadata?.full_name || supabaseUser.email?.split('@')[0] || 'User',
+      phone: supabaseUser.user_metadata?.phone || supabaseUser.email || '',
+      role: supabaseUser.user_metadata?.role || 'user',
+    };
+  }
+
+  function handleLogin(userData) {
+    // Called from Auth.jsx after a successful Supabase sign-in
+    // The Supabase onAuthStateChange listener below will also fire and
+    // keep the session alive on refresh, so we just do a best-effort update here.
+    const userObj = {
+      id: userData.id || null,
+      phone: userData.phone || '',
+      name: userData.name || 'User',
+      role: userData.role || 'user',
+    };
+    setUser(userObj);
+  }
+
+  async function handleLogout() {
+    await supabase.auth.signOut();
+    setUser(null);
+    setBookings([]);
+  }
+
+  // ── Restore session on page refresh ─────────────────────────────────────────
+  useEffect(() => {
+    // Check for an existing session immediately
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) setUser(buildUserObj(session.user));
+    });
+
+    // Listen for future auth state changes (login / logout / token refresh)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ? buildUserObj(session.user) : null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  // ── Fetch providers when relevant tab is active ──────────────────────────────
+  useEffect(() => {
+    if (user && (activeTab === 'discover' || activeTab === 'dashboard')) {
+      fetchProviders();
+    }
+  }, [activeTab, user]);
+
+  // ── Fetch real bookings from Supabase ────────────────────────────────────────
+  async function fetchBookings() {
+    if (!user?.id) return;
+    setBookingsLoading(true);
+    const { data, error } = await supabase
+      .from('bookings')
+      .select(`
+        id, slot_time, status, total_price,
+        providers (
+          id,
+          profiles ( full_name ),
+          services ( name )
+        )
+      `)
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false });
+
+    if (!error && data) {
+      setBookings(data);
+    } else if (error) {
+      console.error('Failed to fetch bookings:', error.message);
+    }
+    setBookingsLoading(false);
+  }
+
+  useEffect(() => {
+    if (user && activeTab === 'bookings') {
+      fetchBookings();
+    }
+  }, [activeTab, user]);
+
 
   if (!user) {
     return <Auth onLogin={handleLogin} />;
@@ -337,13 +427,33 @@ function App() {
                 <h2>Your Recent Bookings</h2>
               </div>
               <div className="bookings-list">
-                <div className="empty-state">
-                  <Calendar size={48} className="subtle-text" />
-                  <p>You have no active bookings yet.</p>
-                  <button className="provider-cta" style={{ width: 'auto', padding: '10px 20px' }} onClick={() => setActiveTab('discover')}>
-                    Browse Professionals
-                  </button>
-                </div>
+                {bookingsLoading ? (
+                  <p className="subtle-text">Loading your bookings...</p>
+                ) : bookings.length === 0 ? (
+                  <div className="empty-state">
+                    <Calendar size={48} className="subtle-text" />
+                    <p>You have no active bookings yet.</p>
+                    <button className="provider-cta" style={{ width: 'auto', padding: '10px 20px' }} onClick={() => setActiveTab('discover')}>
+                      Browse Professionals
+                    </button>
+                  </div>
+                ) : (
+                  bookings.map(b => (
+                    <div key={b.id} className="booking-item">
+                      <div className="booking-info">
+                        <h4>{b.providers?.profiles?.full_name || 'Service Pro'}</h4>
+                        <p>{b.providers?.services?.name || 'Service'}</p>
+                        <span className="subtle-text">
+                          {b.slot_time ? new Date(b.slot_time).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' }) : 'Time TBD'}
+                        </span>
+                      </div>
+                      <div className="booking-meta">
+                        <span className={`status-chip ${b.status}`}>{b.status}</span>
+                        <span className="provider-price">₹{b.total_price}</span>
+                      </div>
+                    </div>
+                  ))
+                )}
               </div>
             </motion.div>
           )}
