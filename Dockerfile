@@ -1,6 +1,15 @@
 # Stage 1: Build the React frontend
 FROM node:20-alpine as frontend-builder
 WORKDIR /app/web
+
+# Accept Supabase credentials as build arguments
+ARG VITE_SUPABASE_URL
+ARG VITE_SUPABASE_ANON_KEY
+
+# Set them as environment variables for Vite to embed during build
+ENV VITE_SUPABASE_URL=$VITE_SUPABASE_URL
+ENV VITE_SUPABASE_ANON_KEY=$VITE_SUPABASE_ANON_KEY
+
 # Copy package files and install dependencies
 COPY web/package*.json ./
 RUN npm install
