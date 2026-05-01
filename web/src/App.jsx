@@ -169,7 +169,8 @@ function App() {
 
     // Fallback for demo
     try {
-      const res = await fetch('http://localhost:8000/providers/discover?lat=28.6139&lng=77.2090&service_id=1');
+      const apiUrl = import.meta.env.VITE_API_URL || '';
+      const res = await fetch(`${apiUrl}/providers/discover?lat=28.6139&lng=77.2090&service_id=1`);
       const data = await res.json();
       setProviders(data.results || []);
     } catch (err) {
