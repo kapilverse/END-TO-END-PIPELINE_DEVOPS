@@ -144,6 +144,7 @@ function App() {
   const [viewMode, setViewMode] = useState('list'); // 'list' or 'map'
   const [selectedProvider, setSelectedProvider] = useState(null);
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
+  const [reviewModal, setReviewModal] = useState(null);
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
@@ -279,6 +280,22 @@ function App() {
   const activeBookingsCount = bookings.filter(b => b.status !== 'completed' && b.status !== 'cancelled').length;
   const totalSpent = bookings.reduce((sum, b) => sum + (b.total_price || 0), 0);
 
+  async function submitReview(rating, text) {
+    if (!reviewModal) return;
+    const { error } = await supabase.from('reviews').insert({
+      booking_id: reviewModal.id,
+      user_id: user.id,
+      provider_id: reviewModal.providers.id,
+      rating: rating,
+      review_text: text
+    });
+    if (!error) {
+      alert("Review submitted successfully!");
+      setReviewModal(null);
+    } else {
+      alert("Failed to submit review: " + error.message);
+    }
+  }
 
   if (!user) {
     return <Auth onLogin={handleLogin} />;
@@ -473,6 +490,11 @@ function App() {
                       <div className="booking-meta">
                         <span className={`status-chip ${b.status}`}>{b.status}</span>
                         <span className="provider-price">₹{b.total_price}</span>
+                        {b.status === 'completed' && (
+                          <button className="text-button" style={{ marginTop: '4px', fontSize: '0.75rem' }} onClick={() => setReviewModal(b)}>
+                            Leave Review
+                          </button>
+                        )}
                       </div>
                     </div>
                   ))
@@ -496,7 +518,40 @@ function App() {
           )}
         </AnimatePresence>
 
-
+        <AnimatePresence>
+          {reviewModal && (
+            <div className="modal-overlay" onClick={() => setReviewModal(null)}>
+              <motion.div 
+                className="modal-content"
+                initial={{ opacity: 0, y: 50, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 20, scale: 0.95 }}
+                onClick={(e) => e.stopPropagation()}
+                style={{ padding: '24px', maxWidth: '400px', margin: 'auto', marginTop: '100px', borderRadius: '16px' }}
+              >
+                <h2 style={{ marginBottom: '8px' }}>Review {reviewModal.providers?.profiles?.full_name}</h2>
+                <p style={{ marginBottom: '20px', color: '#64748b' }}>How was your experience?</p>
+                <form onSubmit={(e) => {
+                  e.preventDefault();
+                  submitReview(parseInt(e.target.rating.value), e.target.review_text.value);
+                }}>
+                  <div className="form-group" style={{ marginBottom: '16px' }}>
+                    <label style={{ fontSize: '0.88rem', fontWeight: 600, color: '#475569', marginBottom: '8px', display: 'block' }}>Rating (1-5)</label>
+                    <input type="number" name="rating" min="1" max="5" defaultValue="5" required className="search-input" />
+                  </div>
+                  <div className="form-group" style={{ marginBottom: '24px' }}>
+                    <label style={{ fontSize: '0.88rem', fontWeight: 600, color: '#475569', marginBottom: '8px', display: 'block' }}>Review Text</label>
+                    <textarea name="review_text" rows="3" required className="search-input" style={{ width: '100%', resize: 'vertical' }} placeholder="They did a great job..."></textarea>
+                  </div>
+                  <div className="modal-actions" style={{ display: 'flex', gap: '10px' }}>
+                    <button type="button" className="provider-cta cancel-btn" onClick={() => setReviewModal(null)} style={{ flex: 1, background: 'transparent' }}>Cancel</button>
+                    <button type="submit" className="provider-cta" style={{ flex: 1, background: '#2563eb', color: 'white', borderColor: '#2563eb' }}>Submit Review</button>
+                  </div>
+                </form>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
 
       </main>
     </div>

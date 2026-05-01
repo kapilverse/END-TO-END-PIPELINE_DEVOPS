@@ -140,6 +140,28 @@ const Auth = ({ onLogin }) => {
             )}
           </AnimatePresence>
 
+          <AnimatePresence mode="wait">
+            {!isLogin && (
+              <motion.div
+                key="role"
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="form-group"
+              >
+                <label>Account Type</label>
+                <select 
+                  value={formData.role}
+                  onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                  className="auth-select"
+                >
+                  <option value="user">Customer</option>
+                  <option value="provider">Service Professional (e.g. Househelper)</option>
+                </select>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           <div className="form-group">
             <label><Phone size={16} /> Phone Number</label>
             <input
