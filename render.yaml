@@ -2,7 +2,10 @@ services:
   # 1. The FastAPI Backend
   - type: web
     name: urbanpulse-api
-    env: docker
+    runtime: docker
+    rootDir: .
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
     plan: free # Change to 'pro' if needed
     envVars:
       - key: DATABASE_URL
@@ -15,7 +18,8 @@ services:
   # 2. The Web Frontend (Vite)
   - type: web
     name: urbanpulse-web
-    env: static
+    runtime: static
+    rootDir: .
     buildCommand: |
       cd web
       npm install
