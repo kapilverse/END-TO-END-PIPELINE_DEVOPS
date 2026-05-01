@@ -1,7 +1,7 @@
-# UrbanService Pro - System Design
+# UrbanPulse - System Design
 
 ## 1. Architecture Overview
-UrbanService uses a **distributed micro-architecture** designed for high concurrency and low latency.
+UrbanPulse uses a **distributed micro-architecture** designed for high concurrency and low latency.
 
 ### Components:
 - **Client (Mobile)**: React Native (Expo) for cross-platform availability.
