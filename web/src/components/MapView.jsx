@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -21,7 +21,7 @@ function RecenterAutomatically({ lat, lng }) {
   const map = useMap();
   useEffect(() => {
     map.setView([lat, lng]);
-  }, [lat, lng]);
+  }, [lat, lng, map]);
   return null;
 }
 
