@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Zap, Mail, Lock, Phone, User, ArrowRight } from 'lucide-react';
+import { Zap, Lock, Phone, User, ArrowRight } from 'lucide-react';
+import { supabase } from '../supabaseClient';
 import './Auth.css';
 
 const Auth = ({ onLogin }) => {
@@ -13,48 +14,98 @@ const Auth = ({ onLogin }) => {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [signupSuccess, setSignupSuccess] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
-
-    const endpoint = isLogin ? '/auth/login' : '/auth/signup';
-    
-    // In a real app, you'd use URLSearchParams for OAuth2 login or JSON for signup
-    const body = isLogin 
-      ? new URLSearchParams({ username: formData.phone, password: formData.password })
-      : JSON.stringify(formData);
-
-    const headers = isLogin 
-      ? { 'Content-Type': 'application/x-www-form-urlencoded' }
-      : { 'Content-Type': 'application/json' };
+    setSignupSuccess(false);
 
     try {
-      const res = await fetch(`http://localhost:8000${endpoint}`, {
-        method: 'POST',
-        headers,
-        body
-      });
+      const sanitizedPhone = formData.phone.replace(/\s+/g, '');
+      const email = `${sanitizedPhone}@urbanpulse.com`;
 
-      const data = await res.json();
+      if (isLogin) {
+        // ── Supabase Login ──────────────────────────────────────────────────
+        const { data, error: authError } = await supabase.auth.signInWithPassword({
+          email,
+          password: formData.password,
+        });
 
-      if (res.ok) {
-        localStorage.setItem('token', data.access_token);
-        onLogin(data);
+        if (authError) throw authError;
+
+        onLogin({
+          id: data.user.id,
+          name: data.user.user_metadata?.full_name || sanitizedPhone,
+          phone: formData.phone,
+          role: data.user.user_metadata?.role || 'user',
+          token: data.session.access_token,
+        });
       } else {
-        setError(data.detail || 'Authentication failed');
+        // ── Supabase Signup ─────────────────────────────────────────────────
+        const { data, error: authError } = await supabase.auth.signUp({
+          email,
+          password: formData.password,
+          options: {
+            data: {
+              full_name: formData.name,
+              role: formData.role,
+            },
+          },
+        });
+
+        if (authError) throw authError;
+
+        // If identities is empty, the email is already registered
+        if (data?.user?.identities?.length === 0) {
+          throw new Error('This phone number is already registered. Please log in instead.');
+        }
+
+        // Show success — ask user to verify email or log in
+        setSignupSuccess(true);
       }
     } catch (err) {
-      setError('Server connection failed');
+      console.error(err);
+      setError(err.message || 'Authentication failed');
     } finally {
       setLoading(false);
     }
   };
 
+  // ── Signup success screen ────────────────────────────────────────────────────
+  if (signupSuccess) {
+    return (
+      <div className="auth-container">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="auth-card"
+        >
+          <div className="auth-header">
+            <div className="brand-icon large">
+              <Zap size={32} />
+            </div>
+            <h2>Account Created!</h2>
+            <p>
+              If email confirmation is required, check your inbox and click the
+              verification link. Otherwise you can sign in right now.
+            </p>
+          </div>
+          <button
+            className="auth-submit"
+            onClick={() => { setSignupSuccess(false); setIsLogin(true); }}
+          >
+            Go to Sign In <ArrowRight size={18} />
+          </button>
+        </motion.div>
+      </div>
+    );
+  }
+
   return (
     <div className="auth-container">
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="auth-card"
@@ -70,7 +121,7 @@ const Auth = ({ onLogin }) => {
         <form onSubmit={handleSubmit} className="auth-form">
           <AnimatePresence mode="wait">
             {!isLogin && (
-              <motion.div 
+              <motion.div
                 key="name"
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
@@ -78,12 +129,12 @@ const Auth = ({ onLogin }) => {
                 className="form-group"
               >
                 <label><User size={16} /> Full Name</label>
-                <input 
-                  type="text" 
-                  placeholder="John Doe" 
-                  required 
+                <input
+                  type="text"
+                  placeholder="John Doe"
+                  required
                   value={formData.name}
-                  onChange={(e) => setFormData({...formData, name: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 />
               </motion.div>
             )}
@@ -91,23 +142,23 @@ const Auth = ({ onLogin }) => {
 
           <div className="form-group">
             <label><Phone size={16} /> Phone Number</label>
-            <input 
-              type="tel" 
-              placeholder="+91 98765 43210" 
-              required 
+            <input
+              type="tel"
+              placeholder="+91 98765 43210"
+              required
               value={formData.phone}
-              onChange={(e) => setFormData({...formData, phone: e.target.value})}
+              onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
             />
           </div>
 
           <div className="form-group">
             <label><Lock size={16} /> Password</label>
-            <input 
-              type="password" 
-              placeholder="••••••••" 
-              required 
+            <input
+              type="password"
+              placeholder="••••••••"
+              required
               value={formData.password}
-              onChange={(e) => setFormData({...formData, password: e.target.value})}
+              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
             />
           </div>
 
