@@ -1,12 +1,11 @@
 services:
-  # 1. The FastAPI Backend (Monolith serving React Frontend)
   - type: web
     name: urbanpulse-api
     runtime: docker
     rootDir: .
     dockerfilePath: ./Dockerfile
     dockerContext: .
-    plan: free # Change to 'pro' if needed
+    plan: free 
     envVars:
       - key: DATABASE_URL
         fromDatabase:
