@@ -66,6 +66,10 @@ const Sidebar = ({ activeTab, setActiveTab, isOpen, setIsOpen, onLogout }) => {
       </nav>
 
       <div className="sidebar-footer">
+        <div className="support-info" style={{ padding: '0 12px 16px', fontSize: '0.82rem' }}>
+          <p className="subtle-text" style={{ margin: '0 0 4px' }}>Support</p>
+          <a href="mailto:infonovelnet@gmail.com" className="support-link">infonovelnet@gmail.com</a>
+        </div>
         <button className="menu-item sign-out" onClick={onLogout}>
           <LogOut size={20} />
           <span>Sign Out</span>
