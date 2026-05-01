@@ -175,12 +175,8 @@ function App() {
       setProviders(data.results || []);
     } catch (err) {
       console.error("Failed to fetch providers", err);
-      // Fallback for demo with coordinates
-      setProviders([
-        { id: 1, name: "John Plumber", rating: 4.8, price: 500, is_ai_recommended: true, location: { lat: 28.6139, lng: 77.2090 } },
-        { id: 2, name: "Quick Fix Inc", rating: 4.2, price: 400, is_ai_recommended: false, location: { lat: 28.6239, lng: 77.2190 } },
-        { id: 3, name: "Expert Electrics", rating: 4.9, price: 800, is_ai_recommended: true, location: { lat: 28.6039, lng: 77.1990 } },
-      ]);
+      // Fallback if API also fails
+      setProviders([]);
     }
     setLoading(false);
   }
@@ -262,10 +258,14 @@ function App() {
   }
 
   useEffect(() => {
-    if (user && activeTab === 'bookings') {
+    if (user && (activeTab === 'bookings' || activeTab === 'dashboard')) {
       fetchBookings();
     }
   }, [activeTab, user]);
+
+  // Dashboard computations
+  const activeBookingsCount = bookings.filter(b => b.status !== 'completed' && b.status !== 'cancelled').length;
+  const totalSpent = bookings.reduce((sum, b) => sum + (b.total_price || 0), 0);
 
 
   if (!user) {
@@ -315,10 +315,10 @@ function App() {
               className="dashboard-panel"
             >
               <div className="stats-grid">
-                <StatCard label="Total Revenue" value="₹1,24,500" icon={TrendingUp} trend={12.5} />
-                <StatCard label="Active Bookings" value="42" icon={Clock} trend={8.2} />
-                <StatCard label="Live Providers" value="158" icon={Users} trend={-2.4} />
-                <StatCard label="Avg. Response" value="12m" icon={Zap} trend={15.1} />
+                <StatCard label="Total Spent" value={`₹${totalSpent}`} icon={TrendingUp} trend={0} />
+                <StatCard label="Active Bookings" value={activeBookingsCount} icon={Clock} trend={0} />
+                <StatCard label="Live Providers" value={providers.length} icon={Users} trend={0} />
+                <StatCard label="Avg. Response" value="0m" icon={Zap} trend={0} />
               </div>
 
               <div className="content-grid">
@@ -335,19 +335,22 @@ function App() {
                 <aside className="panel">
                   <h3 className="live-title">Live Feed</h3>
                   <div className="feed-list">
-                    {[1, 2, 3].map(i => (
-                      <div key={i} className="feed-item">
+                    {bookings.slice(0, 3).map(b => (
+                      <div key={b.id} className="feed-item">
                         <div className="feed-icon">
                           <MapPin size={18} />
                         </div>
                         <div>
                           <p className="feed-text">
-                            <span>John Doe</span> booked <strong>Urban Fix</strong>
+                            <span>You</span> booked <strong>{b.providers?.profiles?.full_name || 'a Pro'}</strong>
                           </p>
-                          <span className="feed-time">2 minutes ago</span>
+                          <span className="feed-time">
+                            {b.slot_time ? new Date(b.slot_time).toLocaleString('en-IN', { dateStyle: 'short' }) : 'Recently'}
+                          </span>
                         </div>
                       </div>
                     ))}
+                    {bookings.length === 0 && <p className="subtle-text" style={{ padding: '1rem' }}>No recent activity.</p>}
                   </div>
                 </aside>
               </div>
