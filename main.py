@@ -10,7 +10,8 @@ from pathlib import Path
 from api import auth, bookings, tracking, providers
 
 BASE_DIR = Path(__file__).resolve().parent
-STATIC_DIR = BASE_DIR / "app" / "static"
+# React Frontend Build Directory
+REACT_DIST_DIR = BASE_DIR / "web" / "dist"
 
 app = FastAPI(
     title="UrbanPulse Marketplace API",
@@ -31,25 +32,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Static Files for Web UI
-app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
-
-@app.get("/admin", response_class=HTMLResponse)
-async def admin_panel():
-    try:
-        with open(STATIC_DIR / "admin.html", "r", encoding="utf-8") as f:
-            return f.read()
-    except FileNotFoundError:
-        return "<h1>Admin Panel File Not Found</h1><p>Please check static/admin.html</p>"
-
-@app.get("/", response_class=HTMLResponse)
-async def root():
-    try:
-        with open(STATIC_DIR / "index.html", "r", encoding="utf-8") as f:
-            return f.read()
-    except FileNotFoundError:
-        return "<h1>UrbanPulse Pro Web UI Not Found</h1><p>Please check static/index.html</p>"
-
 @app.get("/health")
 async def health_check():
     return {"status": "healthy", "timestamp": time.time()}
@@ -59,3 +41,26 @@ app.include_router(auth.router, prefix="/auth", tags=["Auth"])
 app.include_router(bookings.router, prefix="/bookings", tags=["Bookings"])
 app.include_router(providers.router, prefix="/providers", tags=["Providers"])
 app.include_router(tracking.router, tags=["Tracking"])
+
+# Serve Vite static assets
+import os
+from fastapi.responses import FileResponse
+
+if (REACT_DIST_DIR / "assets").exists():
+    app.mount("/assets", StaticFiles(directory=str(REACT_DIST_DIR / "assets")), name="assets")
+
+# Catch-all route for React SPA
+@app.api_route("/{path_name:path}", methods=["GET"])
+async def catch_all(path_name: str):
+    index_file = REACT_DIST_DIR / "index.html"
+    
+    # Check if a specific file like vite.svg is requested
+    requested_file = REACT_DIST_DIR / path_name
+    if path_name and requested_file.exists() and requested_file.is_file():
+        return FileResponse(requested_file)
+
+    # Otherwise return the React index.html
+    if index_file.exists():
+        return FileResponse(index_file)
+    
+    return {"message": "UrbanPulse API is running. React frontend not built yet. Run 'npm run build' in the 'web' folder."}
