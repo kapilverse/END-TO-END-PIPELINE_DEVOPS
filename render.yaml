@@ -1,5 +1,5 @@
 services:
-  # 1. The FastAPI Backend
+  # 1. The FastAPI Backend (Monolith serving React Frontend)
   - type: web
     name: urbanpulse-api
     runtime: docker
@@ -14,20 +14,6 @@ services:
           property: connectionString
       - key: SECRET_KEY
         generateValue: true
-
-  # 2. The Web Frontend (Vite)
-  - type: web
-    name: urbanpulse-web
-    runtime: static
-    rootDir: .
-    buildCommand: |
-      cd web
-      npm install
-      npm run build
-    staticPublishPath: web/dist
-    envVars:
-      - key: VITE_API_URL
-        value: https://urbanpulse-api.onrender.com # You'll update this once deployed
 
 databases:
   - name: urbanpulse-db
