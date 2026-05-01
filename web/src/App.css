@@ -509,6 +509,57 @@
   font-size: 1rem;
 }
 
+/* ── Booking list items ─────────────────────────────────────── */
+.bookings-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.booking-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+.booking-info h4 {
+  margin: 0 0 2px;
+  font: 600 0.95rem/1.3 'Outfit', sans-serif;
+  color: #0f172a;
+}
+
+.booking-info p {
+  margin: 0 0 4px;
+  color: #64748b;
+  font-size: 0.84rem;
+}
+
+.booking-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.status-chip {
+  font: 700 0.68rem/1 'Space Grotesk', sans-serif;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 5px 10px;
+  border-radius: 999px;
+}
+
+.status-chip.pending   { background: #fef9c3; color: #92400e; }
+.status-chip.confirmed { background: #dcfce7; color: #166534; }
+.status-chip.completed { background: #dbeafe; color: #1e40af; }
+.status-chip.cancelled { background: #fee2e2; color: #991b1b; }
+
 @media (max-width: 1160px) {
 
   .stats-grid {
