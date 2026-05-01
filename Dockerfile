@@ -1,13 +1,21 @@
-# Use an official Python runtime as a parent image
+# Stage 1: Build the React frontend
+FROM node:20-alpine as frontend-builder
+WORKDIR /app/web
+# Copy package files and install dependencies
+COPY web/package*.json ./
+RUN npm install
+# Copy the rest of the frontend code and build
+COPY web/ ./
+RUN npm run build
+
+# Stage 2: Build the FastAPI backend
 FROM python:3.11-slim
+WORKDIR /app
 
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 ENV PYTHONPATH=/app/app
-
-# Set the working directory in the container
-WORKDIR /app
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -20,8 +28,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the rest of the application code
+# Copy the Python application code
 COPY . .
+
+# Copy the built React frontend from the builder stage
+# We place it in web/dist since that's where main.py expects it
+COPY --from=frontend-builder /app/web/dist /app/web/dist
 
 # Expose the port the app runs on
 EXPOSE 8000
