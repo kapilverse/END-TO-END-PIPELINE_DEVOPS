@@ -1,13 +1,16 @@
-from fastapi import FastAPI, Depends, HTTPException, status
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse
 from prometheus_client import make_asgi_app, Counter
 import time
-import os
+from pathlib import Path
 
 # Import routes
 from api import auth, bookings, tracking, providers
+
+BASE_DIR = Path(__file__).resolve().parent
+STATIC_DIR = BASE_DIR / "app" / "static"
 
 app = FastAPI(
     title="UrbanPulse Marketplace API",
@@ -29,14 +32,12 @@ app.add_middleware(
 )
 
 # Static Files for Web UI
-if not os.path.exists("static"):
-    os.makedirs("static")
-app.mount("/static", StaticFiles(directory="static"), name="static")
+app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
 @app.get("/admin", response_class=HTMLResponse)
 async def admin_panel():
     try:
-        with open("static/admin.html", "r") as f:
+        with open(STATIC_DIR / "admin.html", "r", encoding="utf-8") as f:
             return f.read()
     except FileNotFoundError:
         return "<h1>Admin Panel File Not Found</h1><p>Please check static/admin.html</p>"
@@ -44,7 +45,7 @@ async def admin_panel():
 @app.get("/", response_class=HTMLResponse)
 async def root():
     try:
-        with open("static/index.html", "r", encoding="utf-8") as f:
+        with open(STATIC_DIR / "index.html", "r", encoding="utf-8") as f:
             return f.read()
     except FileNotFoundError:
         return "<h1>UrbanPulse Pro Web UI Not Found</h1><p>Please check static/index.html</p>"
