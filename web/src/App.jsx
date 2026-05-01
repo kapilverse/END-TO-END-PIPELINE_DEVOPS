@@ -154,43 +154,31 @@ function App() {
   async function fetchProviders() {
     setLoading(true);
     
-    // Attempt Supabase Fetch
-    if (import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_URL !== 'https://your-project-id.supabase.co') {
-      const { data, error } = await supabase
-        .from('providers')
-        .select(`
-          id, rating, base_price,
-          profiles (full_name, avatar_url, location),
-          services (name)
-        `)
-        .eq('is_active', true);
+    const { data, error } = await supabase
+      .from('providers')
+      .select(`
+        id, rating, base_price,
+        profiles (full_name, avatar_url, location),
+        services (name)
+      `)
+      .eq('is_active', true);
 
-      if (!error && data) {
-        const formatted = data.map(p => ({
-          id: p.id,
-          name: p.profiles?.full_name || 'Expert Pro',
-          rating: p.rating,
-          price: p.base_price,
-          location: p.profiles?.location,
-          is_ai_recommended: p.rating > 4.5
-        }));
-        setProviders(formatted);
-        setLoading(false);
-        return;
-      }
-    }
-
-    // Fallback for demo
-    try {
-      const apiUrl = import.meta.env.VITE_API_URL || '';
-      const res = await fetch(`${apiUrl}/providers/discover?lat=28.6139&lng=77.2090&service_id=1`);
-      const data = await res.json();
-      setProviders(data.results || []);
-    } catch (err) {
-      console.error("Failed to fetch providers", err);
-      // Fallback if API also fails
+    if (!error && data) {
+      const formatted = data.map(p => ({
+        id: p.id,
+        name: p.profiles?.full_name || 'Expert Pro',
+        rating: p.rating,
+        price: p.base_price,
+        location: p.profiles?.location,
+        is_ai_recommended: p.rating >= 4.5,
+        service: p.services?.name || 'Service'
+      }));
+      setProviders(formatted);
+    } else {
+      console.error("Failed to fetch providers from Supabase", error);
       setProviders([]);
     }
+    
     setLoading(false);
   }
 
