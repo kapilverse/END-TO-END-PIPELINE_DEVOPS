@@ -273,8 +273,8 @@ export default function App() {
   const [providerForm, setProviderForm] = useState({
     serviceId: '',
     price: '500',
-    lat: String(DEFAULT_LOCATION.lat),
-    lng: String(DEFAULT_LOCATION.lng),
+    address: '',
+    contactNo: '',
     isActive: true,
   });
   const [providerSearch, setProviderSearch] = useState('');
@@ -388,7 +388,7 @@ export default function App() {
             rating,
             base_price,
             is_active,
-            profiles ( full_name, avatar_url, location ),
+            profiles ( full_name, location ),
             services ( id, name ),
             reviews ( rating )
           `,
@@ -509,22 +509,26 @@ export default function App() {
     try {
       const serviceId = Number(providerForm.serviceId);
       const price = Number(providerForm.price);
-      const lat = Number(providerForm.lat);
-      const lng = Number(providerForm.lng);
 
       if (!serviceId || !price) {
         throw new Error('Choose a service and a starting price.');
       }
 
-      const location = { lat, lng };
+      if (!providerForm.address.trim()) {
+        throw new Error('Please enter your service address.');
+      }
+
+      if (!providerForm.contactNo.trim()) {
+        throw new Error('Please enter your contact number.');
+      }
 
       const { error: profileError } = await supabase.from('profiles').upsert(
         {
           id: currentUser.id,
           full_name: currentUser.name,
-          phone: currentUser.phone,
+          phone: providerForm.contactNo.trim(),
           role: 'provider',
-          location,
+          location: { address: providerForm.address.trim() },
         },
         { onConflict: 'id' },
       );
@@ -887,22 +891,22 @@ export default function App() {
                     </label>
 
                     <label className="provider-field">
-                      <span>Latitude</span>
+                      <span>Address</span>
                       <input
-                        type="number"
-                        step="0.0001"
-                        value={providerForm.lat}
-                        onChange={(event) => setProviderForm((previous) => ({ ...previous, lat: event.target.value }))}
+                        type="text"
+                        placeholder="e.g. Sector 15, Noida, UP"
+                        value={providerForm.address}
+                        onChange={(event) => setProviderForm((previous) => ({ ...previous, address: event.target.value }))}
                       />
                     </label>
 
                     <label className="provider-field">
-                      <span>Longitude</span>
+                      <span>Contact Number</span>
                       <input
-                        type="number"
-                        step="0.0001"
-                        value={providerForm.lng}
-                        onChange={(event) => setProviderForm((previous) => ({ ...previous, lng: event.target.value }))}
+                        type="tel"
+                        placeholder="e.g. +91 98765 43210"
+                        value={providerForm.contactNo}
+                        onChange={(event) => setProviderForm((previous) => ({ ...previous, contactNo: event.target.value }))}
                       />
                     </label>
                   </div>
