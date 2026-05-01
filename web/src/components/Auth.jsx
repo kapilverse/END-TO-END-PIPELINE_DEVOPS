@@ -51,6 +51,7 @@ const Auth = ({ onLogin }) => {
             data: {
               full_name: formData.name,
               role: formData.role,
+              phone: sanitizedPhone,
             },
           },
         });
@@ -156,7 +157,7 @@ const Auth = ({ onLogin }) => {
                   className="auth-select"
                 >
                   <option value="user">Customer</option>
-                  <option value="provider">Service Professional (e.g. Househelper)</option>
+                  <option value="provider">Househelp / Service Professional</option>
                 </select>
               </motion.div>
             )}
