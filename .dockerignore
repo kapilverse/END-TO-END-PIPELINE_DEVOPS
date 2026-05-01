@@ -1,8 +1,12 @@
 .git
 .env
 venv
+.venv
+app/venv
 __pycache__
+app/__pycache__
 node_modules
+app/node_modules
 web/node_modules
 mobile/node_modules
 *.pyc
